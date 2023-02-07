@@ -2,11 +2,18 @@ import { registerOrSignUp } from "@/apis/authAPIs";
 import Card from "@/components/atoms/Card";
 import Error from "@/components/atoms/Error";
 import LinkText from "@/components/atoms/LinkText";
+import { AppContext } from "AppContext";
 import Router from "next/router";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
 const Signup = () => {
+  const { isAuthenticated } = useContext(AppContext);
+  useEffect(() => {
+    if (isAuthenticated) {
+      Router.push("/");
+    }
+  }, [isAuthenticated]);
   const [error, setError] = useState({ status: false, massage: "" });
   const [loading, setloading] = useState(false);
 
@@ -44,7 +51,7 @@ const Signup = () => {
     <>
       <div id="loginpage">
         <Card>
-          {error.status && <Error message={error.massage}></Error>}
+          {error.status && <Error message={error.massage} />}
           <h2>Sign Up</h2>
           <form autoComplete="off" onSubmit={handleSignup}>
             <input
@@ -71,8 +78,7 @@ const Signup = () => {
             <button type="submit">{loading ? "loading..." : "Sign Up"}</button>
           </form>
           <p>
-            Already have an account?{" "}
-            <LinkText path="signin" title="Sign In"></LinkText>
+            Already have an account? <LinkText path="signin" title="Sign In" />
           </p>
         </Card>
       </div>
