@@ -1,3 +1,4 @@
+import { registerOrSignUp } from "@/apis/authAPIs";
 import Card from "@/components/atoms/Card";
 import Error from "@/components/atoms/Error";
 import LinkText from "@/components/atoms/LinkText";
@@ -5,49 +6,45 @@ import Router from "next/router";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 
-
 const Signup = () => {
-  const [error, setError] = useState(false);
-  const [lodging, setlodging] = useState(false);
+  const [error, setError] = useState({ status: false, massage: "" });
+  const [loading, setloading] = useState(false);
 
   const handleSignup = async (e) => {
-    setlodging(true);
-    setError(false);
     e.preventDefault();
+    setloading(true);
+    setError({ status: false, massage: "" });
+
     const body = {
       email: e.target.email.value,
       password: e.target.password.value,
       confirmpassword: e.target.confirmPassword.value,
     };
 
-    const response = await fetch(
-      "https://sysonex-admin-testing.onrender.com/signup",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      }
-    );
-    const responseData = await response.json();
+    try {
+      const response = await registerOrSignUp(body);
 
-    if (responseData?.name === "error") {
-      setError(true);
-    } else {
-      toast.success("Account created successfully");
-      Router.push("/signin");
+      if (response?.status == 200) {
+        toast.success("Account created successfully");
+        Router.push("/signin");
+      }
+    } catch (error) {
+      if (error?.response?.status == 400) {
+        setError({
+          status: true,
+          massage: "Email already exists, try to sign in",
+        });
+      }
     }
-    setlodging(false);
+
+    setloading(false);
   };
 
   return (
     <>
       <div id="loginpage">
         <Card>
-          {error && (
-            <Error message="Email already exists, try to sign in"></Error>
-          )}
+          {error.status && <Error message={error.massage}></Error>}
           <h2>Sign Up</h2>
           <form autoComplete="off" onSubmit={handleSignup}>
             <input
@@ -71,7 +68,7 @@ const Signup = () => {
               name="confirmPassword"
               placeholder="Confirm password"
             />
-            <button type="submit">{lodging ? "Lodging..." : "Sign Up"}</button>
+            <button type="submit">{loading ? "loading..." : "Sign Up"}</button>
           </form>
           <p>
             Already have an account?{" "}

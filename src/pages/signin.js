@@ -1,43 +1,47 @@
+import { signIn } from "@/apis/authAPIs";
 import Card from "@/components/atoms/Card";
 import Error from "@/components/atoms/Error";
 import LinkText from "@/components/atoms/LinkText";
+import Router from "next/router";
 import { useState } from "react";
-import verifyUser from "../helper/verifyUser";
+import { toast } from "react-hot-toast";
 
-const Signin = () => {
+const SignIn = () => {
   const [error, setError] = useState({ status: false, massage: "" });
-  const [lodging, setlodging] = useState(false);
+  const [loading, setloading] = useState(false);
 
   const handleSubmit = async (e) => {
-    setlodging(true);
-    setError({ status: false, massage: "" });
     e.preventDefault();
+    setloading(true);
+    setError({ status: false, massage: "" });
+
     const body = {
       password: e.target.password.value,
       email: e.target.email.value,
     };
-    const response = await fetch(
-      "https://sysonex-admin-testing.onrender.com/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      }
-    );
-    const responseData = await response.json();
-    if (responseData?.err) {
-      setError({ status: true, massage: responseData.err });
-    } else if (Object.keys(responseData).length === 0) {
+
+    const response = await signIn(body);
+
+    if (response?.status == 200) {
+      toast.success(response.data);
+      Router.push("/");
+    }
+
+    if (response?.response?.status == 400) {
       setError({
         status: true,
         massage: "No account was found with this email",
       });
-    } else {
-      verifyUser(responseData);
     }
-    setlodging(false);
+
+    if (response?.response?.status == 500) {
+      setError({
+        status: true,
+        massage: response?.response?.data?.err,
+      });
+    }
+
+    setloading(false);
   };
   return (
     <div id="loginpage">
@@ -59,7 +63,7 @@ const Signin = () => {
             name="password"
             placeholder="Password"
           />
-          <button type="submit">{lodging ? "Lodging..." : "Sign In"}</button>
+          <button type="submit">{loading ? "loading..." : "Sign In"}</button>
         </form>
         <p>
           Don’t have an account?{" "}
@@ -69,4 +73,4 @@ const Signin = () => {
     </div>
   );
 };
-export default Signin;
+export default SignIn;

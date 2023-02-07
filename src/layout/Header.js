@@ -1,16 +1,19 @@
 import LinkText from "@/components/atoms/LinkText";
-import { useEffect, useState } from "react";
+import SignOutButton from "@/components/atoms/SignOutButton";
+import { getStoredData } from "@/utils/localStorage";
+import { useEffect } from "react";
 
 const Header = () => {
-  const [userData, setUserData] = useState({});
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("user"));
-    setUserData(data);
+    const isLoggingIn = getStoredData("JWT");
+    console.log(isLoggingIn);
   }, []);
+
   return (
     <nav>
       <LinkText path="/" title="Home"></LinkText>
       <LinkText path="/signin" title="Sign In"></LinkText>
+      <SignOutButton></SignOutButton>
     </nav>
   );
 };
